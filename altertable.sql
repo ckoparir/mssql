@@ -14,11 +14,8 @@
 
 -------------------- Enter Table and Database Names ------------------ 
 
--- Database Name
-DECLARE @db NVARCHAR(100) = N'testapi';             
-
 -- Table Name
-DECLARE @tbl NVARCHAR(100) = N'PosSatislari';    
+DECLARE @table NVARCHAR(100) = N'PosSatislari';    
 
 ---------------------------------------------------------------------
 
@@ -28,7 +25,6 @@ DECLARE @tbl NVARCHAR(100) = N'PosSatislari';
 *                                                                   * 
 ********************************************************************/
 
-DECLARE @table NVARCHAR(200) = @db + N'.dbo.' + @tbl;
 DECLARE @tmp NVARCHAR(250) = @table + N'_temp';
 DECLARE @sql NVARCHAR(MAX) = N'';
 
@@ -37,9 +33,6 @@ SET NOCOUNT ON;
 BEGIN TRY
 
    BEGIN TRAN
-
-   SET @sql = CONCAT(N'USE ', @db);
-   EXEC(@sql);
 
    -- Drop temporary table if it exists
    PRINT('Dropping exisiting temp table');
@@ -52,15 +45,31 @@ BEGIN TRY
    SET @sql = CONCAT(N'SELECT * INTO ', @tmp, N' FROM ', @table);
    EXEC(@sql); 
 
-   -- Altering table  to add new GUID Primary Key column 
-   PRINT('Adding new UniqueID Column to temp table');
-   SET @sql = CONCAT(N'ALTER TABLE ', @tmp, N' ADD UQID UNIQUEIDENTIFIER PRIMARY KEY NOT NULL DEFAULT NEWID()');
+   -- Adding new GUID (UQID) column 
+   PRINT('Adding new UniqueID GUID (UQID) column...');
+   SET @sql = CONCAT(N'ALTER TABLE ', @tmp, N' ADD UQID UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID()');
    EXEC(@sql);
 
-   --SET @sql = CONCAT(N'SELECT * FROM ', @tmp);
-   --EXEC(@sql) 
+   /*
+   -- Dropping primary key
+   PRINT('Dropping primary key...');
+   SET @sql = CONCAT(N'ALTER TABLE ', @tmp, CHAR(13), N'DROP CONSTRAINT PK_PosSatislari;');
+   EXEC(@sql);
+   */
 
-   SET @sql = CONCAT(N'DROP TABLE ', @table, '; ', N' EXEC sp_rename  ', @tbl, '_temp, ', @tbl);
+   -- Dropping original table
+   PRINT('Dropping ' + @table + '...');
+   SET @sql = CONCAT(N'DROP TABLE ', @table)
+   EXEC(@sql) 
+
+   -- Adding primary key
+   PRINT('Adding primary keys...');
+   SET @sql = CONCAT(N'ALTER TABLE ', @tmp, CHAR(13), N'ADD CONSTRAINT PK_', @table, N' Primary Key (ID, UQID)');
+   EXEC(@sql);
+
+   -- Renaming temparary table to original tablename
+   PRINT('Renaming ' + @tmp + ' to ' + @table + '...');
+   SET @sql = CONCAT(N'EXEC sp_rename  ', @table, '_temp, ', @table);
    EXEC(@sql) 
 
    COMMIT TRAN
@@ -69,7 +78,10 @@ END TRY
 BEGIN CATCH
 
    IF @@TRANCOUNT > 0
+   BEGIN
+      PRINT('Rollback all process...!');
       ROLLBACK TRAN
+   END
 
    DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE()
    DECLARE @ErrorSeverity INT = ERROR_SEVERITY()
