@@ -15,7 +15,7 @@
 -------------------- Enter Table and Database Names ------------------ 
 
 -- Table Name
-DECLARE @table NVARCHAR(100) = N'PosSatislari';    
+DECLARE @table NVARCHAR(100) = N'BAK_PosSatislari';    
 
 ---------------------------------------------------------------------
 
@@ -49,13 +49,6 @@ BEGIN TRY
    PRINT('Adding new UniqueID GUID (UQID) column...');
    SET @sql = CONCAT(N'ALTER TABLE ', @tmp, N' ADD UQID UNIQUEIDENTIFIER NOT NULL DEFAULT NEWID()');
    EXEC(@sql);
-
-   /*
-   -- Dropping primary key
-   PRINT('Dropping primary key...');
-   SET @sql = CONCAT(N'ALTER TABLE ', @tmp, CHAR(13), N'DROP CONSTRAINT PK_PosSatislari;');
-   EXEC(@sql);
-   */
 
    -- Dropping original table
    PRINT('Dropping ' + @table + '...');
