@@ -9,7 +9,22 @@ script.
 This script will be run in a batch file on Windows Systems
 and works with Microsoft Sql Server 2014 and later versions.
 
-Date     : 01.12.2022
+Example  : 
+______________________________________________________________
+
+   ./run.bat 
+
+   Enter Server IP or Hostname   : example.com
+   Enter database name           : testdb
+   Enter username                : username
+
+   Connecting example.com...
+
+   Password                      : <Password for testdb database>
+
+______________________________________________________________
+
+Date     : 20.12.2022
 Filename : altertable.sql
 Author   : ckoparir@gmail.com
 ---------------------------------------------------------------*/
@@ -27,7 +42,7 @@ FETCH NEXT FROM db_cursor INTO @table
 
 WHILE @@FETCH_STATUS = 0 
 BEGIN
-   -- DECLARE @table NVARCHAR(100) = @name;    
+   DECLARE @col NVARCHAR(100) = N'';    
    DECLARE @sql NVARCHAR(MAX) = N'';
    DECLARE @tmp NVARCHAR(250) = @table + N'_temp';
 
@@ -35,11 +50,15 @@ BEGIN
 
       BEGIN TRAN
 
+      /*
       -- Drop temporary table if it exists
       PRINT('Dropping existing temptable: ' + @tmp);
       IF OBJECT_ID(@tmp, N'U') IS NOT NULL 
          SET @sql = CONCAT(N'DROP TABLE ', @tmp);
          EXEC(@sql);
+      */
+
+      SET @col = (SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_NAME=@table AND ORDINAL_POSITION=1);
 
       -- Insert data and table structure from source table to the temporary table
       PRINT('Copying original table: ' + @table);
@@ -58,7 +77,7 @@ BEGIN
 
       -- Adding primary key
       PRINT('Adding primary keys...');
-      SET @sql = CONCAT(N'ALTER TABLE ', @tmp, CHAR(13), N'ADD CONSTRAINT PK_', @table, N' Primary Key (ID, UQID)');
+      SET @sql = CONCAT(N'ALTER TABLE ', @tmp, CHAR(13), N'ADD CONSTRAINT PK_', @table, N' Primary Key (', @col, N', UQID);');
       EXEC(@sql);
 
       -- Renaming temparary table to original tablename

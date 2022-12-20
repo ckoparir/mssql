@@ -3,7 +3,22 @@
 :: to be able to connect to the sql server & database  
 :: then excutes the altertable.sql in the root
 ::
-:: Date     : 01.12.2022
+::  Example  : 
+::  ______________________________________________________________
+::
+::   ./run.bat 
+::
+::   Enter Server IP or Hostname   : example.com
+::   Enter database name           : testdb
+::   Enter username                : <database username>
+::
+::   Connecting example.com...
+::
+::   Password                      : <Password for testdb database>
+::
+::______________________________________________________________
+::
+:: Date     : 20.12.2022
 :: Filname  : run.bat
 :: Author   : ckoparir@gmail.com
 ::
